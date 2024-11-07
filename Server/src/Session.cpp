@@ -98,27 +98,27 @@ void Session::do_read()
 	boost::asio::async_read_until(socket_, boost::asio::dynamic_buffer(data_), "\n",
 		[this, self](boost::system::error_code ec, std::size_t length)
 		{
-			if (ec)
+			if (!ec)
 			{
+				std::string message = data_.substr(0, length);
+				data_.erase(0, length);
+
+				auto space_pos = message.find(' ');
+				std::string command = message.substr(0, space_pos);
+				std::string args = space_pos == std::string::npos ? "" : message.substr(space_pos + 1);
+
+				auto it = command_handlers_.find(command);
+				if (it != command_handlers_.end())
+				{
+					it->second(args);
+				}
+				else
+				{
+					handle_default_message(message);
+				}
+			}
+			else {
 				clients_.erase(client_id_);
-				return;
-			}
-
-			std::string message = data_.substr(0, length);
-			data_.erase(0, length);
-
-			auto space_pos = message.find(' ');
-			std::string command = message.substr(0, space_pos);
-			std::string args = space_pos == std::string::npos ? "" : message.substr(space_pos + 1);
-
-			auto it = command_handlers_.find(command);
-			if (it != command_handlers_.end())
-			{
-				it->second(args);
-			}
-			else
-			{
-				handle_default_message(message);
 			}
 
 			do_read();
