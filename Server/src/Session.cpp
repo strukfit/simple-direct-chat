@@ -91,6 +91,14 @@ void Session::handle_default_message(const std::string& message)
 		return;
 	}
 
+	auto target_session = clients_.find(target_id_);
+	if (target_session == clients_.end())
+	{
+		deliver(std::string("The target client has disconnected.\n"));
+		target_id_ = -1;
+		return;
+	}
+
 	std::string msg = "Client " + std::to_string(client_id_) + ": " + message + "\n";
 	clients_[target_id_]->deliver(msg);
 }
