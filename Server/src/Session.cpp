@@ -68,7 +68,8 @@ void Session::handle_chat_command(const std::string& args)
 			return;
 		}
 
-		deliver("Now chatting with Client " + std::to_string(target_id) + ".\n");
+		target_id_ = target_id;
+		deliver("Now chatting with Client " + args + ".\n");
 	}
 	catch (...)
 	{
@@ -90,7 +91,7 @@ void Session::handle_default_message(const std::string& message)
 		return;
 	}
 
-	std::string msg = "Client " + std::to_string(client_id_) + ": " + message;
+	std::string msg = "Client " + std::to_string(client_id_) + ": " + message + "\n";
 	clients_[target_id_]->deliver(msg);
 }
 
