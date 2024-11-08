@@ -87,6 +87,7 @@ void Session::handle_default_message(const std::string& message)
 	if (target_id_ == -1)
 	{
 		deliver(std::string("No client selected. Use '/chat <ID>' to select a client.\n"));
+		return;
 	}
 
 	std::string msg = "Client " + std::to_string(client_id_) + ": " + message;
@@ -118,7 +119,9 @@ void Session::do_read()
 					handle_default_message(message);
 				}
 			}
-			else {
+			else 
+			{
+				std::cerr << "Error reading message: " << ec.message() << std::endl;
 				clients_.erase(client_id_);
 			}
 
