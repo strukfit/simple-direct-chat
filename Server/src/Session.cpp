@@ -105,6 +105,8 @@ void Session::do_read()
 				std::string message = read_data_.substr(0, length);
 				read_data_.erase(0, length);
 
+				message = message.substr(0, message.find_last_not_of("\n") + 1);
+
 				auto space_pos = message.find(' ');
 				std::string command = message.substr(0, space_pos);
 				std::string args = space_pos == std::string::npos ? "" : message.substr(space_pos + 1);
@@ -121,7 +123,6 @@ void Session::do_read()
 			}
 			else 
 			{
-				std::cerr << "Error reading message: " << ec.message() << std::endl;
 				clients_.erase(client_id_);
 			}
 
