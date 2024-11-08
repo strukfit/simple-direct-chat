@@ -11,7 +11,6 @@ Session::Session(tcp::socket socket, std::unordered_map<int, std::shared_ptr<Ses
 
 void Session::start()
 {
-	clients_[client_id_] = shared_from_this();
 	send_client_list();
 	do_read();
 }

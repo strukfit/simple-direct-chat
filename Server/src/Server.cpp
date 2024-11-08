@@ -14,7 +14,9 @@ void Server::do_accept()
 		{
 			if (!ec)
 			{
-				std::make_shared<Session>(std::move(socket), clients_, next_client_id_++)->start();
+				auto session = std::make_shared<Session>(std::move(socket), clients_, next_client_id_++);
+				clients_[session->get_id()] = session;
+				session->start();
 			}
 			do_accept();
 		}
