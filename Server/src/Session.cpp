@@ -16,10 +16,12 @@ void Session::start()
 	do_read();
 }
 
-void Session::deliver(const std::string& msg)
+void Session::deliver(std::string& msg)
 {
+	write_data_ = std::move(msg);
+
 	auto self(shared_from_this());
-	boost::asio::async_write(socket_, boost::asio::buffer(msg),
+	boost::asio::async_write(socket_, boost::asio::buffer(write_data_),
 		[this, self](boost::system::error_code ec, std::size_t)
 		{
 			if (ec)
@@ -71,21 +73,21 @@ void Session::handle_chat_command(const std::string& args)
 	}
 	catch (...)
 	{
-		deliver("Invalid client ID.\n");
+		deliver(std::string("Invalid client ID.\n"));
 	}
 }
 
 void Session::handle_exit_command()
 {
 	target_id_ = -1;
-	deliver("Exited chat. Choose another client.\n");
+	deliver(std::string("Exited chat. Choose another client.\n"));
 }
 
 void Session::handle_default_message(const std::string& message)
 {
 	if (target_id_ == -1)
 	{
-		deliver("No client selected. Use 'chat <ID>' to select a client.\n");
+		deliver(std::string("No client selected. Use '/chat <ID>' to select a client.\n"));
 	}
 
 	std::string msg = "Client " + std::to_string(client_id_) + ": " + message;
@@ -95,13 +97,13 @@ void Session::handle_default_message(const std::string& message)
 void Session::do_read()
 {
 	auto self(shared_from_this());
-	boost::asio::async_read_until(socket_, boost::asio::dynamic_buffer(data_), "\n",
+	boost::asio::async_read_until(socket_, boost::asio::dynamic_buffer(read_data_), "\n",
 		[this, self](boost::system::error_code ec, std::size_t length)
 		{
 			if (!ec)
 			{
-				std::string message = data_.substr(0, length);
-				data_.erase(0, length);
+				std::string message = read_data_.substr(0, length);
+				read_data_.erase(0, length);
 
 				auto space_pos = message.find(' ');
 				std::string command = message.substr(0, space_pos);

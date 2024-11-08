@@ -16,7 +16,7 @@ public:
 	Session(tcp::socket socket, std::unordered_map<int, std::shared_ptr<Session>>& clients, int id);
 
 	void start();
-	void deliver(const std::string& msg);
+	void deliver(std::string& msg);
 	int get_id() const;
 
 private:
@@ -30,7 +30,8 @@ private:
 	std::unordered_map<std::string, std::function<void(const std::string&)>> command_handlers_;
 	tcp::socket socket_;
 	std::unordered_map<int, std::shared_ptr<Session>>& clients_;
-	std::string data_;
+	std::string read_data_;
+	std::string write_data_;
 	int client_id_;
 	int target_id_;
 };
