@@ -37,6 +37,13 @@ int main(int argc, char* argv[])
 {
 	try 
 	{
+		SetThreadUILanguage(
+			MAKELCID(
+				MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+				SORT_DEFAULT
+			)
+		);
+
 		if (argc != 3)
 		{
 			std::cerr << "Usage: clientapp <host> <port>" << std::endl;
@@ -50,8 +57,17 @@ int main(int argc, char* argv[])
 		char* address = argv[1];
 		char* port = argv[2];
 
-		/*socket.connect(tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 1234));*/
-		boost::asio::connect(socket, resolver.resolve(address, port));
+		try 
+		{
+			boost::asio::connect(socket, resolver.resolve(address, port));
+			std::cout << "Connected to server " << address << " on port " << port << ".\n";
+		}
+		catch (const boost::system::system_error& e)
+		{
+			std::cerr << "Failed to connect to server " << address << " on port " << port << ".\n";
+			std::cerr << "Error: " << e.code().message() << "\n";
+			return 1;
+		}
 
 		std::thread(read_messages, std::ref(socket)).detach();
 
@@ -66,6 +82,11 @@ int main(int argc, char* argv[])
 				boost::asio::write(socket, boost::asio::buffer(input));
 			}	
 		}
+	}
+	catch (const boost::system::system_error& e)
+	{
+		std::cerr << "Error: " << e.code().message() << "\n";
+		return 1;
 	}
 	catch (std::exception& e)
 	{
