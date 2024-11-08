@@ -33,13 +33,25 @@ void read_messages(tcp::socket& socket)
 	}
 }
 
-int main() 
+int main(int argc, char* argv[])
 {
 	try 
 	{
+		if (argc != 3)
+		{
+			std::cerr << "Usage: clientapp <host> <port>" << std::endl;
+			return 1;
+		}
+
 		boost::asio::io_context io_context;
+
 		tcp::socket socket(io_context);
-		socket.connect(tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 1234));
+		tcp::resolver resolver(io_context);
+		char* address = argv[1];
+		char* port = argv[2];
+
+		/*socket.connect(tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 1234));*/
+		boost::asio::connect(socket, resolver.resolve(address, port));
 
 		std::thread(read_messages, std::ref(socket)).detach();
 

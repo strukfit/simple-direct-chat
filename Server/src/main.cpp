@@ -1,12 +1,21 @@
 #include <boost/asio.hpp>
 #include "../include/Server.h"
 
-int main()
+int main(int argc, char* argv[])
 {
 	try {
+		if (argc != 2)
+		{
+			std::cerr << "Usage: serverapp <port>" << std::endl;
+			return 1; 
+		}
+
 		boost::asio::io_context io_context;
-		Server server(io_context, 1234);
+		short port = std::atoi(argv[1]);
+
+		Server server(io_context, port);
 		std::cout << "Server launched successfully.\n";
+
 		io_context.run();
 	}
 	catch (std::exception& e)
