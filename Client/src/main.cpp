@@ -10,7 +10,23 @@ void read_messages(tcp::socket& socket)
 	boost::asio::streambuf buffer;
 	while (true)
 	{
-		boost::asio::read_until(socket, buffer, "\n");
+		boost::system::error_code ec;
+		size_t bytes_transferred = socket.read_some(buffer.prepare(1024), ec);
+
+		if (ec)
+		{
+			if (ec == boost::asio::error::eof)
+			{
+				std::cout << "Connection closed by server." << std::endl;
+				return;
+			}
+			else
+			{
+				throw boost::system::system_error(ec);
+			}
+		}
+
+		buffer.commit(bytes_transferred);
 		std::string message(buffers_begin(buffer.data()), buffers_end(buffer.data()));
 		buffer.consume(buffer.size());
 		std::cout << message;
@@ -33,8 +49,10 @@ int main()
 		while (true)
 		{
 			std::getline(std::cin, input);
-			input += "\n";
-			boost::asio::write(socket, boost::asio::buffer(input));
+			if (!input.empty()) {
+				input += "\n";
+				boost::asio::write(socket, boost::asio::buffer(input));
+			}	
 		}
 	}
 	catch (std::exception& e)
